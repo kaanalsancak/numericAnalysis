@@ -3,7 +3,7 @@
 % email address: alsancak.mk@gmail.com 
 % Date: 2024/10/17 - 
 % ------------------------------------------------------------------------
-% Heun's Metodu ile y' = y - t^2 + 1, y(0) = 0.5 denklem çözümü
+% Heun's Metodu ile y' = y - t^2 + 1,S denklem çözümü
 
 clear;
 clc;

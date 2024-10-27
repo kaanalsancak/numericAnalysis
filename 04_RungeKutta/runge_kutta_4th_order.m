@@ -8,7 +8,7 @@
 clear;
 clc;
 
-% Richard, L. "Burden and J. Douglas Faires." Numerical analysis’  ,
+% Richard, L. "Burden and JS. Douglas Faires." Numerical analysisS  ,
 % Table 5.1  gerçek çözüm sonuclarının dizisi oluşturuluyor
 
 sonuclar = [0.5000000, 0.8292986, 1.2140877, ...

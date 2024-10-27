@@ -42,8 +42,13 @@ for i = 1:(length(t))
     % Hesaplanan değeri y_values dizisine ekle
     y(i + 1) = y_correct;
 
-     fprintf("%f %f %f \n",y(i+1), t(i), f(t(i), y(i)))
+
 end
 
 
+fprintf("f(i)\t\t  hesaplana\t\treel\t\tfark\n");
+for i = 1:length(t)-1
+    % reel sonuçları ve hesaplanan sonuçları ekrana yazdırma farkları ile
+    fprintf("y(%0.1f) = \t  %f \t  %f \t  %f \n",((i-1)*0.2),y(i), sonuclar(i), abs(sonuclar(i)-y(i)))
+end
 
