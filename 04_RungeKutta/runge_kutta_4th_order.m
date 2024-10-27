@@ -1,16 +1,12 @@
-
 % ------------------------------------------------------------------------
 % Author: Muhammet Kaan Alsancak
 % email address: alsancak.mk@gmail.com 
 % Date: 2024/10/21 - 22:12
 % ------------------------------------------------------------------------
 % Runge Kutta 4th order ile diferansiyel denklem çözümü
-% Verilen diferansiyel denklem: y' = y - t^2 + 1, y(0) = 0.5
-% y' = f(t, y) ile ifade edilecek.
 
 clear;
 clc;
-
 
 % Richard, L. "Burden and J. Douglas Faires." Numerical analysis’  ,
 % Table 5.1  gerçek çözüm sonuclarının dizisi oluşturuluyor
@@ -27,34 +23,42 @@ h = 0.2;
 t0 = 0;
 y0 = 0.5;
 % final değeri
-t_end = 2;
+tn = 2;
 % adım sayısı
-n = (t_end - t0)/h;
+n = (tn - t0)/h;
 
 % fonksiyon tanımlaması
 f = @(t, y) (y - t^2 + 1);
 
 % dizilerin oluşturulması
-t_values = t0:h:t_end;
-y_values = zeros(1, length(t_values));
-y_values(1) = y0;
-
-% Bilgilendirme çıktısı
-fprintf("f(n)\t reel values \t calculation result \t differences\n");
+t = t0:h:tn;
+y = zeros(1, length(t));
+y(1) = y0;
 
 % Runge-Kutta 4th order algoritması
 for i = 1:n+1
-    t = t_values(i);
-    y = y_values(i);
-    
-    k1 = h * f(t, y);
-    k2 = h * f(t + h/2, y + k1/2);
-    k3 = h * f(t + h/2, y + k2/2);
-    k4 = h * f(t + h, y + k3);
-    
-    y_values(i+1) = y + (k1 + 2*k2 + 2*k3 + k4)/6;
 
-   fprintf("y(%0.1f) = %0.10f \t %0.10f \t %0.10f \n",(i-1)*h , sonuclar(i),y_values(i),(sonuclar(i)-y_values(i)));
+    % k1 değerinin hesaplanması     
+    k1 = h * f(t(i), y(i));
+
+    % k2 değerinin hesaplanması 
+    k2 = h * f(t(i) + h/2, y(i) + k1/2);
+
+    % k3 değerinin hesaplanması 
+    k3 = h * f(t(i) + h/2, y(i) + k2/2);
+  
+    % k4 değerinin hesaplanması 
+    k4 = h * f(t(i) + h, y(i) + k3);
+
+    % Runge Kutta 4th order çözümü
+    y(i+1) = y(i) + (k1 + 2*k2 + 2*k3 + k4)/6;
+    
 
 end
 
+% Sonucların ekrana yazdırılması 
+fprintf("f(i)\t\t hesaplanan\t\t\t reel\t\t\tfark\n");
+for i = 1:length(t)
+    % reel sonuçları ve hesaplanan sonuçları ekrana yazdırma farkları ile
+    fprintf("y(%0.1f) = \t  %.8f \t  %.8f \t  %.8f \n",((i-1)*0.2),y(i), sonuclar(i), abs(sonuclar(i)-y(i)))
+end

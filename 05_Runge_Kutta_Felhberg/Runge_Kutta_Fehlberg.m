@@ -1,72 +1,96 @@
-
 % ------------------------------------------------------------------------
 % Author: Muhammet Kaan Alsancak
 % email address: alsancak.mk@gmail.com 
 % Date: 2024/10/21 - 22:12
 % ------------------------------------------------------------------------
-% Runge-Kutta-Fehlberg ile diferansiyel denklem çözümü
-% Verilen diferansiyel denklem: y' = y - t^2 + 1, y(0) = 0.5
-% y' = f(t, y) ile ifade edilecek.
+% Runge Kutta Fehlberg order ile diferansiyel denklem çözümü
 
-clear;
 clc;
-
-% fonksiyon tanımlaması
-f = @(t, y) y - t^2 + 1;
+clear;
 
 % Richard, L. "Burden and J. Douglas Faires." Numerical analysis’  ,
 % Table 5.1  gerçek çözüm sonuclarının dizisi oluşturuluyor
 
-sonuclar = [0.5000000, 0.8292986, 1.2140877, ...
-            1.6489406, 2.1272295, 2.6408591, ...
-            3.1799415, 3.7324000, 4.2834838, ...
-            4.8151763, 5.3054720 ];
+sonuclar = [0.5000000, 0.9204873, 1.3964884, ...
+            1.9537446, 2.5864198, 3.2604520, ...
+            3.9520844, 4.6308127, 5.2574687, ...
+            5.3054720];
 
 
-% Fehlberg's method katsayıları
-a = [0, 1/4, 3/8, 12/13, 1, 1/2];
-b = [...
-    0,         0,          0,           0,           0,         0; ...
-    1/4,       0,          0,           0,           0,         0; ...
-    3/32,      9/32,       0,           0,           0,         0; ...
-    1932/2197, -7200/2197, 7296/2197,   0,           0,         0; ...
-    439/216,   -8,         3680/513,    -845/4104,   0,         0; ...
-    -8/27,     2,          -3544/2565,  1859/4104,   -11/40,    0];
-c4 = [25/216, 0, 1408/2565, 2197/4104, -1/5, 0]; % 4th derece ağırlıklandırma
-c5 = [16/135, 0, 6656/12825, 28561/56430, -9/50, 2/55]; % 5th derece ağırlıklandırma
+% Giriş Verileri
+a = 0;           % Başlangıç noktası
+b = 2;           % Bitiş noktası
+alpha = 0.5;     % Başlangıç koşulu y(0)
+TOL = 1e-5;      % Tolerans
+hmax = 0.25;      % Maksimum adım boyu
+hmin = 0.01;     % Minimum adım boyu
+
+% Başlangıç Ayarları
+t = a;
+w = alpha;
+h = hmax;  % Başlangıçta maksimum adım boyuyla başlıyoruz
+FLAG = 1;  % FLAG hesaplamanın başarılı olup olmadığını tutar
+
+% Diferansiyel Denklemin Tanımı
+f = @(t, y) y - t^2 + 1;
+
+% Çıkış dizileri (t, w değerlerini saklamak için)
+T = t;
+W = w;
+
+% FLAG = 1 oldukça (While FLAG = 1)
+while FLAG == 1
+
+    % Adım 3: k1, k2, k3, k4, k5, k6 hesaplamaları
+    k1 = h * f(t, w);
+    k2 = h * f(t + h/4, w + k1/4);
+    k3 = h * f(t + 3*h/8, w + 3*k1/32 + 9*k2/32);
+    k4 = h * f(t + 12*h/13, w + 1932*k1/2197 - 7200*k2/2197 + 7296*k3/2197);
+    k5 = h * f(t + h, w + 439*k1/216 - 8*k2 + 3680*k3/513 - 845*k4/4104);
+    k6 = h * f(t + h/2, w - 8*k1/27 + 2*k2 - 3544*k3/2565 + 1859*k4/4104 - 11*k5/40);
 
 
-% Başlangıç değelerinin atanması
-h = 0.2; 
-t0 = 0;     
-y0 = 0.5;    
-t_end = 2; 
-n = (t_end - t0)/h;
-% adım sayılarının hesaplanması
-% dizilerin oluşturulması
-t_values = t0:h:t_end;
-y_values = zeros(1, length(t_values));
-y_values(1) = y0;
+    % Hata tahmini R hesaplaması
+    R = abs(k1/360 - 128*k3/4275 - 2197*k4/75240 + k5/50 + 2*k6/55) / h;
 
-% Bilgilendirme çıktısı
-fprintf("f(n)\t reel values \t calculation result \t differences\n");
 
-% Runge-Kutta-Fehlberg hesaplanması
-for i = 1:n+1   
-    t = t_values(i);
-    y = y_values(i);
-    % k değerlerinin hesaplanması
-    k1 = h * f(t, y_values(i));
-    k2 = h * f(t + a(2)*h, y + b(2,1)*k1);
-    k3 = h * f(t + a(3)*h, y + b(3,1)*k1 + b(3,2)*k2);
-    k4 = h * f(t + a(4)*h, y + b(4,1)*k1 + b(4,2)*k2 + b(4,3)*k3);
-    k5 = h * f(t + a(5)*h, y + b(5,1)*k1 + b(5,2)*k2 + b(5,3)*k3 + b(5,4)*k4);
-    k6 = h * f(t + a(6)*h, y + b(6,1)*k1 + b(6,2)*k2 + b(6,3)*k3 + b(6,4)*k4 + b(6,5)*k5);
-    
-    % 4th dereceden çözüm işlemi
-    y_values(i+1) = y_values(i) + c4(1)*k1 + c4(2)*k2 + c4(3)*k3 + c4(4)*k4 + c4(5)*k5 + c4(6)*k6;
-   
-   fprintf("y(%0.1f) = %0.10f \t %0.10f   \t %0.10f \n",(i-1)*h , sonuclar(i),y_values(i),(sonuclar(i)-y_values(i)));
 
+    % Eğer R <= TOL ise adımı kabul et
+    if R <= TOL
+        % Adım 6: t'yi güncelle (Approximation accepted)
+        t = t + h;
+        w = w + 25*k1/216 + 1408*k3/2565 + 2197*k4/4104 - k5/5;
+        
+        % Sonuçları kaydet
+        T = [T; t];  % t değerlerini sakla
+        W = [W; w];  % w değerlerini sakla
+  
+    end
+
+    % Çıkış (hedefe ulaştıysak)
+    if t >= b
+        FLAG = 0;
+
+    else
+        %  Yeni h değerini hesapla
+        h_new = 0.84 * (TOL/R)^(1/4) * h;
+        
+        %  h'yi sınırlar içinde güncelle
+        if h_new > hmax
+            h = hmax;
+
+        elseif h_new < hmin
+            FLAG = 0;
+        else
+            h = h_new;
+        end
+    end
+ end
+
+
+% Sonucların ekrana yazdır
+fprintf("f(i)\t\t  hesaplana\t\treel\t\tfark\n");
+for i = 1:length(T)-1
+    % reel sonuçları ve hesaplanan sonuçları ekrana yazdırma hata miktarı ile
+    fprintf("y(%0.1f) = \t  %.8f \t  %.8f \t  %.8f \n",((i-1)*0.2),W(i), sonuclar(i), abs(sonuclar(i)-W(i)))
 end
-
