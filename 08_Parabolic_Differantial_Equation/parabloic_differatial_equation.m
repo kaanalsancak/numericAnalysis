@@ -29,20 +29,20 @@ n = 5;
 t = 9;
 
 % time Step
-dt = 3;
+dt = 0.1;
 
 % calculcating number of step
 runs = t/dt + 1;
 
 % step size of length
-dx = 1/n;
+dx = l/n;
 
 % alpha = thermal diffusivity
 alpha = k_prime/(c * density);
 
 % Relaxation factor
-lambda = (alpha*dt)/(dx)^2;
-lambda = 0.4239;
+lambda = alpha*dt/(dx)^2;
+% lambda = 0.4239;
 % programming the excplicit method
 % hangi indisin hangi uzunluğa denk geleceği Hesaplanmış
 for i=1 : 1 : n+1
