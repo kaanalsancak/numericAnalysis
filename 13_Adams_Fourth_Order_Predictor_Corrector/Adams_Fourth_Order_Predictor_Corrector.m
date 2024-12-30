@@ -3,7 +3,7 @@
 % email address: alsancak.mk@gmail.com 
 % Date: 2024/10/22 - 19:12
 % ------------------------------------------------------------------------
-% Adams Dördüncü Derece Predictor-Corrector Yöntemi
+% Adams variablestep size predictor-corrector Yöntemi
 clc;
 clear;
 

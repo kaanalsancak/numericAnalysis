@@ -2,77 +2,102 @@ clc;
 clear;
 
 % Malzeme özellikleri
-E = 207e9; % Elastisite modülü (Pa)
-v = 0.3;   % Poisson oranı
+ElasticModulus = 207e9; % Elastisite modülü (Pa)
+PoissonRatio = 0.3;     % Poisson oranı
 
-% Parçalı fonksiyonun tanımı
-syms r C0 C1 C2 C3 C4
+% Parçalı fonksiyonun tanımı için sembolik değişkenler
+syms Radius Coef0 Coef1 Coef2 Coef3 Coef4
 
-u = piecewise(...
-    0.25 <= r & r <= 0.33, C0 + C1*r, ...
-    0.33 < r & r <= 0.4167, (C0 + 0.33*C1 - 0.33*C2 + C2*r), ...
-    0.4167 < r & r <= 0.5, (C0 + 0.33*C1 - 0.33*C2 + 0.4167*C2 - 0.4167*C4 + C4*r));
+% Parçalı yer değiştirme fonksiyonu tanımlanıyor.
+% Bu fonksiyon, farklı radyal bölgelerdeki yer değiştirme değerlerini ifade eder.
+DisplacementFunction = piecewise(...
+    0.25 <= Radius & Radius <= 0.33, Coef0 + Coef1*Radius, ...
+    0.33 < Radius & Radius <= 0.4167, Coef0 + 0.33*Coef1 - 0.33*Coef2 + Coef2*Radius, ...
+    0.4167 < Radius & Radius <= 0.5, Coef0 + 0.33*Coef1 - 0.33*Coef2 + 0.4167*Coef2 - 0.4167*Coef4 + Coef4*Radius);
 
-% Türevi (du/dr)
-du_dr = diff(u, r);
+% Yer değiştirme fonksiyonunun türevi (du/dr) hesaplanıyor.
+% Bu türev, radyal yöndeki deformasyonu temsil eder.
+DisplacementDerivative = diff(DisplacementFunction, Radius);
 
-% (1) Integral of (du/dr)^2 * r
-I1 = int((du_dr)^2 * r, r, 0.25, 0.5);
+% (1) İlk integral: (du/dr)^2 * r
+% Bu integral, radyal türevin karesinin radyal simetri ile ağırlıklandırılmasını içerir.
+% Fiziksel anlamı: Elastik deformasyon enerjisinin katkısını ifade eder.
+Integral1 = int((DisplacementDerivative)^2 * Radius, Radius, 0.25, 0.5);
 
-% (2) Integral of (du/dr) * u
-I2 = int(du_dr * u, r, 0.25, 0.5);
-I2 = 2 * v * I2;
+% (2) İkinci integral: (du/dr) * u
+% Bu integral, radyal türevin yer değiştirme ile çarpımını içerir.
+% Fiziksel anlamı: Poisson etkisi enerjisinin katkısını ifade eder.
+Integral2 = int(DisplacementDerivative * DisplacementFunction, Radius, 0.25, 0.5);
+Integral2 = 2 * PoissonRatio * Integral2; % Poisson oranı ile çarpılır.
 
-% (3) Integral of u^2 / r
-I3 = int(u^2 / r, r, 0.25, 0.5);
+% (3) Üçüncü integral: u^2 / r
+% Bu integral, yer değiştirme fonksiyonunun karesinin radyal simetri ile ağırlıklandırılmasını ifade eder.
+% Fiziksel anlamı: Radyal gerilme enerjisinin katkısını ifade eder.
+Integral3 = int(DisplacementFunction^2 / Radius, Radius, 0.25, 0.5);
 
-% Sabitlerin uygulanması
-I1 = E / (2 * (1 - v^2)) * I1;
-I2 = E / (2 * (1 - v^2)) * I2;
-I3 = E / (2 * (1 - v^2)) * I3;
+% Sabitlerin malzeme özelliklerine göre çarpımı
+% Elastisite modülü ve Poisson oranı kullanılarak enerji bileşenleri hesaplanır.
+Integral1 = ElasticModulus / (2 * (1 - PoissonRatio^2)) * Integral1;
+Integral2 = ElasticModulus / (2 * (1 - PoissonRatio^2)) * Integral2;
+Integral3 = ElasticModulus / (2 * (1 - PoissonRatio^2)) * Integral3;
 
-% (4) Toplam integral
-I_total = I1 + I2 + I3;
-I_total = I_total - 0.25 * (200e6) * (C0 + C1 * 0.25);
-I_total = 2 * pi * 0.25 * I_total;
+% (4) Toplam enerji fonksiyonu
+% Üç enerji bileşeninin toplamı ile toplam elastik enerji hesaplanır.
+TotalEnergy = Integral1 + Integral2 + Integral3;
 
-% (5) Kısmi türevler
-dI_dC = [diff(I_total, C0); diff(I_total, C1); diff(I_total, C2); diff(I_total, C4)];
+% Kenar koşulları: Sistemin başlangıç koşulları veya sınır yüklemelerini temsil eder.
+BoundaryCondition = 0.25 * (200e6) * (Coef0 + Coef1 * 0.25);
+TotalEnergy = TotalEnergy - BoundaryCondition;
 
-% (6) Denklem sistemi
-eqs = dI_dC == 0;
+% Radyal simetrinin etkisi toplam enerjiye eklenir.
+TotalEnergy = 2 * pi * 0.25 * TotalEnergy;
+
+% (5) Enerjinin kısmi türevleri (∂I/∂Ci)
+% Enerji minimizasyonu için her sabitin türevleri hesaplanır.
+PartialDerivatives = [diff(TotalEnergy, Coef0); diff(TotalEnergy, Coef1); ...
+                      diff(TotalEnergy, Coef2); diff(TotalEnergy, Coef4)];
+
+% (6) Denklem sistemi oluşturuluyor
+% Enerji minimizasyonundan elde edilen denklemler çözülür.
+Equations = PartialDerivatives == 0;
 
 % (7) Sabitlerin çözümü
-sol = solve(eqs, [C0, C1, C2, C4]);
+% Sabitlerin analitik çözümü bulunur.
+Solutions = solve(Equations, [Coef0, Coef1, Coef2, Coef4]);
 
-% Çözümleri sayısal değerlere dönüştür
-C = structfun(@vpa, sol, 'UniformOutput', false);
+% Çözümleri sayısal değerlere dönüştürme
+Constants = structfun(@vpa, Solutions, 'UniformOutput', false);
 
-% Güncellenmiş u fonksiyonu
-u_optimized = piecewise(...
-    0.25 <= r & r <= 0.33, C.C0 + C.C1*r, ...
-    0.33 < r & r <= 0.4167, C.C0 + 0.33*C.C1 - 0.33*C.C2 + C.C2*r, ...
-    0.4167 < r & r <= 0.5, C.C0 + 0.33*C.C1 - 0.33*C.C2 + 0.4167*C.C2 - 0.4167*C.C4 + C.C4*r);
+% Güncellenmiş yer değiştirme fonksiyonu
+% Yeni sabitlerle optimize edilmiş yer değiştirme fonksiyonu oluşturulur.
+OptimizedDisplacement = piecewise(...
+    0.25 <= Radius & Radius <= 0.33, Constants.Coef0 + Constants.Coef1*Radius, ...
+    0.33 < Radius & Radius <= 0.4167, Constants.Coef0 + 0.33*Constants.Coef1 - 0.33*Constants.Coef2 + Constants.Coef2*Radius, ...
+    0.4167 < Radius & Radius <= 0.5, Constants.Coef0 + 0.33*Constants.Coef1 - 0.33*Constants.Coef2 + 0.4167*Constants.Coef2 - 0.4167*Constants.Coef4 + Constants.Coef4*Radius);
 
-% Türevi (du/dr)
-du_dr_optimized = diff(u_optimized, r);
+% Güncellenmiş fonksiyonun türevi (du/dr)
+% Optimize edilmiş yer değiştirme fonksiyonunun türevi hesaplanır.
+OptimizedDisplacementDerivative = diff(OptimizedDisplacement, Radius);
 
 % Gerilme hesaplamaları
-sigma_r = (E / (1 - v^2)) * (du_dr_optimized + v * u_optimized / r);
-sigma_theta = (E / (1 - v^2)) * (du_dr_optimized * v + u_optimized / r);
+% Radyal ve çevresel gerilmeler hesaplanır.
+RadialStress = (ElasticModulus / (1 - PoissonRatio^2)) * (OptimizedDisplacementDerivative + PoissonRatio * OptimizedDisplacement / Radius);
+CircumferentialStress = (ElasticModulus / (1 - PoissonRatio^2)) * (OptimizedDisplacementDerivative * PoissonRatio + OptimizedDisplacement / Radius);
 
-% Belirli noktalardaki değerler
-r_vals = [0.250001, 0.375, 0.4999999];
-sigma_r_vals = double(subs(sigma_r, r, r_vals));
-sigma_theta_vals = double(subs(sigma_theta, r, r_vals));
-u_displacements = double(subs(u_optimized, r, r_vals));
+% Belirli noktalardaki değerlerin hesaplanması
+% Radyal mesafelerde gerilmeler ve yer değiştirmeler hesaplanır.
+RadiusValues = [0.250001, 0.375, 0.4999999];
+RadialStressValues = double(subs(RadialStress, Radius, RadiusValues));
+CircumferentialStressValues = double(subs(CircumferentialStress, Radius, RadiusValues));
+DisplacementValues = double(subs(OptimizedDisplacement, Radius, RadiusValues));
 
-% Sonuçları yazdır
-disp('Sabit Değerler:');
-disp(C);
-disp('Radial Gerilmeler (Pa):');
-disp(sigma_r_vals);
-disp('Çevresel Gerilmeler (Pa):');
-disp(sigma_theta_vals);
-disp('Yer Değiştirmeler (m):');
-disp(u_displacements);
+% Sonuçların yazdırılması
+% Sabitler, gerilmeler ve yer değiştirmeler kullanıcıya sunulur.
+disp('Constants :');
+disp(Constants);
+disp('Radial Stress (Pa):');
+disp(RadialStressValues);
+disp('Circumferential Stress (Pa):');
+disp(CircumferentialStressValues);
+disp('Displacement Values (m):');
+disp(DisplacementValues);

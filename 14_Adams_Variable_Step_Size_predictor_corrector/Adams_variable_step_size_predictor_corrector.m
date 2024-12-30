@@ -1,10 +1,10 @@
+
 % ------------------------------------------------------------------------
 % Author: Muhammet Kaan Alsancak
 % email address: alsancak.mk@gmail.com 
 % Date: 2024/10/22 - 19:12
 % ------------------------------------------------------------------------
 % Explicit_Adams_Bashforth_Variable Step ile diferansiyel denklem çözümü
-
 
 clc;
 clear;
@@ -16,9 +16,9 @@ f = @(t, y) y - t^2 + 1;
 a = 0;            % Başlangıç noktası
 b = 2;            % Bitiş noktası
 alpha = 0.5;      % Başlangıç koşulu y(a) = alpha
-TOL = 1e-4;       % Tolerans
-hmax = 0.2;       % Maksimum adım boyutu
-hmin = 0.01;      % Minimum adım boyutu
+TOL = 10e-5;      % Tolerans
+hmax = 0.01;       % Maksimum adım boyutu
+hmin = 0.001;      % Minimum adım boyutu
 
 % Değişkenleri başlat
 t0 = a;           % Başlangıç zamanı
@@ -27,12 +27,17 @@ h = hmax;         % Başlangıçta maksimum adım boyutu
 FLAG = 1;         % Döngüyü kontrol etmek için
 LAST = 0;         % Son adımı belirlemek için
 i = 1;            % Adım sayacı
+sigma = 0.0;      % Sigma
+
+% Çözüm değerlerini saklamak için diziler
+T_all = [];       % Tüm zaman değerleri
+W_all = [];       % Tüm çözüm değerleri
 
 % Başlangıç değerlerini çıktı olarak yazdır
-fprintf('Adım\t   t\t       w\t       h\n');
-fprintf('%4d\t%8.4f\t%8.6f\t%8.4f\n', i, t0, w0, h);
+fprintf('Adım\t   t\t       w\t       h          sigma\n');
+fprintf('%4d\t%8.4f\t%8.6f\t%8.4f\t%8.4f\n', i, t0, w0, h, sigma);
 
-% İlk üç adım için Runge-Kutta 4. dereceyi çağır
+% İlk üç adım için Runge-Kutta 4. derece ile hesapla
 T = zeros(1, 4); % Zaman değerlerini sakla
 W = zeros(1, 4); % Çözüm değerlerini sakla
 T(1) = t0;
@@ -51,8 +56,12 @@ for j = 1:3
     
     % Adım sayacını artır ve sonucu yazdır
     i = i + 1;
-    fprintf('%4d\t%8.4f\t%8.6f\t%8.4f\n', i, T(j + 1), W(j + 1), h);
+    fprintf('%4d\t%8.4f\t%8.6f\t%8.4f\t%8.4f\n', i, T(j + 1), W(j + 1), h, sigma);
 end
+
+% Tüm sonuçları kaydet
+T_all = [T_all, T];
+W_all = [W_all, W];
 
 % Predictor-Corrector döngüsünü başlat
 while FLAG
@@ -73,12 +82,16 @@ while FLAG
         w_next = WC;
 
         % Sonucu yazdır
-        fprintf('%4d\t%8.4f\t%8.6f\t%8.4f\n', i + 1, t_next, w_next, h);
+        fprintf('%4d\t%8.4f\t%8.6f\t%8.4f\t%8.4f\n', i + 1, t_next, w_next, h, sigma);
 
         % Değerleri güncelle
         T = [T(2:4), t_next];
         W = [W(2:4), w_next];
         i = i + 1;
+
+        % Sonuçları sakla
+        T_all = [T_all, t_next];
+        W_all = [W_all, w_next];
 
         % Son adım kontrolü
         if LAST
@@ -114,5 +127,21 @@ while FLAG
     end
 end
 
-% Hesaplama tamamlandı
 disp('Hesaplama tamamlandı.');
+
+% Sonuçların Grafiği
+figure;
+plot(T_all, W_all, '-o', 'LineWidth', 1);
+title('Adams Variable Step Size');
+xlabel('t');
+ylabel('w ');
+grid on;
+
+
+
+
+
+
+
+
+
