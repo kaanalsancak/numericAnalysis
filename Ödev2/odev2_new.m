@@ -4,7 +4,7 @@ function exterior_penalty_optimization()
 
     % Başlangıç parametreleri
     x = [-0.5; 0.5]; % Başlangıç noktası [x1, x2]
-    r = 10; % Ceza katsayısı
+    r = 1; % Ceza katsayısı
     r_increment = 10; % Ceza katsayısı artış oranı
     tolerance = 1e-6; % Durdurma kriteri
 
@@ -91,8 +91,8 @@ function visualize_results(results)
 
     % Değerleri tablo olarak göster
     fprintf('\nIterasyon Sonuçları:\n');
-    fprintf('Iterasyon\tx1\tx2\tf(x1,x2)\tCeza\n');
+    fprintf('Iterasyon\tx1\t\t\tx2\t\tf(x1,x2)\t\tCeza\n');
     for i = 1:length(results)
-        fprintf('%d\t\t%.4f\t%.4f\t%.4f\t%.4f\n', results(i).iteration, results(i).x1, results(i).x2, results(i).f, results(i).penalty);
+        fprintf('%d\t\t%.6f\t%.6f\t%.6f\t%.6f\n', results(i).iteration, results(i).x1, results(i).x2, results(i).f, results(i).penalty);
     end
 end
