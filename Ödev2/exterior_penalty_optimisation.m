@@ -93,6 +93,6 @@ function visualize_results(results)
     fprintf('\nIterasyon Sonuçları:\n');
     fprintf('Iterasyon\tx1\t\t\tx2\t\tf(x1,x2)\t\tCeza\n');
     for i = 1:length(results)
-        fprintf('%d\t\t%.6f\t%.6f\t%.6f\t%.6f\n', results(i).iteration, results(i).x1, results(i).x2, results(i).f, results(i).penalty);
+        fprintf('%d\t\t%.8f\t%.8f\t%.8f\t%.8f\n', results(i).iteration, results(i).x1, results(i).x2, results(i).f, results(i).penalty);
     end
 end

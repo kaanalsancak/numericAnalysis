@@ -10,7 +10,7 @@ function pid_optimization_with_newton()
 
     % Newton-Raphson parametreleri
     max_iter = 500; % Maksimum iterasyon sayısı
-    tol = 1e-6; % Tolerans
+    tol = 1e-4; % Tolerans
     alpha = 0.1; % Adım boyu (learning rate)
 
     % PID katsayılarını kaydetmek için
